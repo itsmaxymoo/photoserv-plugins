@@ -28,7 +28,7 @@ __plugin_name__ = "Flickr"
 __plugin_uuid__ = "dd5efb7c-4f55-4203-b261-468ccecc0f46"
 __plugin_version__ = "0.3.0"
 __plugin_author__ = "Max Loiacono"
-__plugin_website__ = "https://github.com/photoserv/python-plugins/blob/main/plugins/flickr.md"
+__plugin_website__ = "https://github.com/itsmaxymoo/photoserv-plugins/blob/main/plugins/flickr.md"
 
 # Plugin configuration schema
 __plugin_config__ = {
