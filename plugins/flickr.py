@@ -26,7 +26,7 @@ from photoserv_plugin import PhotoservPlugin
 # Required module-level variables
 __plugin_name__ = "Flickr"
 __plugin_uuid__ = "dd5efb7c-4f55-4203-b261-468ccecc0f46"
-__plugin_version__ = "0.3.0"
+__plugin_version__ = "1.0.0"
 __plugin_author__ = "Max Loiacono"
 __plugin_website__ = "https://github.com/itsmaxymoo/photoserv-plugins/blob/main/plugins/flickr.md"
 
@@ -42,15 +42,18 @@ __plugin_config__ = {
     "upload_size": "(string) Size of photo to upload to Flickr (default: 'original')",
     "photo_description_footer": "Optional footer text to append to photo descriptions",
     "group_sets": "Array of group set configurations with name, groups, auto_tags (glob patterns), and auto_albums (glob patterns)",
+    "entity_parameter_key": "Top-level custom-attributes key for Flickr parameters (default: 'flickr')",
 }
 
 # Entity parameter schema
 __plugin_entity_parameters__ = {
-    "override_description": "Override the default photo description",
-    "additional_tags": "Additional tags to add to this photo",
-    "additional_group_sets": "Additional group set names to apply to this photo",
-    "force": "(bool) Force the operation to run without checking existing Flickr state (default: false)",
-    "safety_level": "(int) Safety level: 1 for Safe, 2 for Moderate, or 3 for Restricted (default: user's default)",
+    "flickr": {
+        "override_description": "Override the default photo description",
+        "additional_tags": "Additional tags to add to this photo",
+        "additional_group_sets": "Additional group set names to apply to this photo",
+        "force": "(bool) Force the operation to run without checking existing Flickr state (default: false)",
+        "safety_level": "(int) Safety level: 1 for Safe, 2 for Moderate, or 3 for Restricted (default: user's default)",
+    }
 }
 
 
@@ -78,6 +81,7 @@ class FlickrPlugin(PhotoservPlugin):
         self.upload_size = config.get('upload_size', 'original')
         self.photo_description_footer = config.get('photo_description_footer')
         self.group_sets = config.get('group_sets', [])
+        self.entity_parameter_key = config.get('entity_parameter_key') or 'flickr'
         
         self.logger.info(f"Flickr plugin initialized for user {self.user_id}")
         self.logger.info(f"Max published photos: {self.flickr_photo_limit}")
@@ -417,7 +421,7 @@ class FlickrPlugin(PhotoservPlugin):
             self.logger.error(f"  Failed to add geotag to photo: {e}")
             # Geotagging is optional, so we won't raise an exception here
 
-    def on_photo_publish(self, data, params, **kwargs):
+    def on_photo_publish(self, data, **kwargs):
         """Handle photo publish events."""
         photo_uuid = data.get('uuid')
         photo_title = data.get('title', 'Untitled')
@@ -425,6 +429,7 @@ class FlickrPlugin(PhotoservPlugin):
         self.logger.info(f"Publishing photo to Flickr: {photo_title} (UUID: {photo_uuid})")
         
         # Check force parameter
+        params = data.get("custom_attributes", {}).get(self.entity_parameter_key, {})
         force = params and params.get('force', False)
         
         # Check if already uploaded (unless forced)
@@ -538,7 +543,7 @@ class FlickrPlugin(PhotoservPlugin):
             # Always close the stream
             photo_stream.close()
 
-    def on_photo_unpublish(self, data, params, **kwargs):
+    def on_photo_unpublish(self, data, **kwargs):
         """Handle photo unpublish events."""
         photo_uuid = data.get('uuid')
         photo_title = data.get('title', 'Untitled')
@@ -546,6 +551,7 @@ class FlickrPlugin(PhotoservPlugin):
         self.logger.info(f"Unpublishing photo from Flickr: {photo_title} (UUID: {photo_uuid})")
         
         # Check force parameter
+        params = data.get("custom_attributes", {}).get(self.entity_parameter_key, {})
         force = params.get('force', False)
         
         # Get flickr photo ID

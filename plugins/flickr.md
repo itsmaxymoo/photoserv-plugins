@@ -43,7 +43,8 @@ The plugin requires the following configuration (provided as JSON in the Photose
   "flickr_photo_limit": 1000,
   "photo_description_footer": "Posted by Photoserv",
   "flickr_oauth_token_secret": "${FLICKR_OAUTH_TOKEN_SECRET}",
-  "flickr_photo_limit_initial_count": 58
+  "flickr_photo_limit_initial_count": 58,
+  "entity_parameter_key": "flickr"
 }
 ```
 
@@ -59,6 +60,7 @@ The plugin requires the following configuration (provided as JSON in the Photose
 - **upload_size** (optional, default: 'original'): Size of the photo to fetch and upload to Flickr (e.g., 'original', 'large', 'medium', 'small')
 - **photo_description_footer** (optional): Text to append to all photo descriptions
 - **group_sets** (optional): Array of group set configurations
+- **entity_parameter_key** (optional, default: `flickr`): Top-level custom-attributes key containing this plugin's per-photo parameters
 
 #### Group Sets
 
@@ -82,11 +84,13 @@ Per-photo parameters can be configured as JSON for each photo:
 
 ```json
 {
-  "override_description": "Custom description for this specific photo",
-  "additional_tags": ["exclusive", "featured"],
-  "additional_group_sets": ["Landscape Photography"],
-  "force": true,
-  "safety_level": 1
+  "flickr": {
+    "override_description": "Custom description for this specific photo",
+    "additional_tags": ["exclusive", "featured"],
+    "additional_group_sets": ["Landscape Photography"],
+    "force": true,
+    "safety_level": 1
+  }
 }
 ```
 
@@ -431,6 +435,9 @@ gets screwey.
 If it seems like a bug, create an issue with as much data as possible.
 
 ## Changelog
+
+- **1.0.0** (2026-10-03): Parity with Photoserv 1.0.0
+  - (BREAKING) New format for entity parameters
 
 - **0.3.0** (2026-02-21): Parity with Photoserv 0.9.0
   - Geotag photos

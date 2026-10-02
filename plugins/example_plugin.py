@@ -20,30 +20,31 @@ __plugin_website__ = "https://github.com/itsmaxymoo/photoserv-plugins/blob/main/
 
 # Example configuration schema - describes what config this plugin expects
 # Users will provide actual values as JSON in the admin interface, for example:
+# IT IS RECOMMENDED to use a config variable to describe instance specific photo parameters
 # {
 #   "example_param": "some value",
 #   "api_key": "${MY_API_KEY}",
 #   "max_retries": 3,
 #   "enabled_features": ["feature1", "feature2"]
+#   "entity_parameter_key": "enter a value or 'example_plugin' if blank"
 # }
 __plugin_config__ = {
     "example_param": "An example configuration parameter",
     "api_key": "An API key for external service (can use ${ENV_VAR} syntax)",
     "max_retries": "Maximum number of retry attempts (numeric value)",
     "enabled_features": "List of enabled features (array of strings)",
+    "entity_parameter_key": "enter a value or 'example_plugin' if blank"
 }
 
 # Example entity parameter schema - describes per-entity parameters
-# Users will provide actual values as JSON per photo, for example:
-# {
-#   "custom_field": "special_value",
-#   "priority": 5,
-#   "tags": ["important", "featured"]
-# }
+# These are added by the user to a photo's "Custom Attributes" field.
+# Your plugin should read a named top-level object.
 __plugin_entity_parameters__ = {
-    "custom_field": "A custom field specific to this photo",
-    "priority": "Priority level for this entity (numeric, e.g., 1-10)",
-    "tags": "Array of tags to apply to this photo",
+    "example_plugin": {
+        "custom_field": "A custom field specific to this photo",
+        "priority": "Priority level for this entity (numeric, e.g., 1-10)",
+        "tags": "Array of tags to apply to this photo",
+    }
 }
 
 
@@ -56,6 +57,7 @@ class ExamplePlugin(PhotoservPlugin):
         
         # Plugin initialization logic
         # config is a dictionary with values from the JSON configuration
+        self.entity_parameter_key = config.get('entity_parameter_key') or 'example_plugin'
         self.logger.info(f"Plugin initialized with config keys: {list(config.keys())}")
         for key, value in config.items():
             self.logger.info(f"  {key}: {value} (type: {type(value).__name__})")
@@ -79,10 +81,12 @@ class ExamplePlugin(PhotoservPlugin):
         """Handle global change events."""
         self.logger.info("Global change event received")
     
-    def on_photo_publish(self, data, params, **kwargs):
+    def on_photo_publish(self, data, **kwargs):
         """Handle photo publish events."""
         # data is a dict with serialized data from the public API
         self.logger.info(f"Photo published: {data.get('title')} (UUID: {data.get('uuid')})")
+
+        params = data.get("custom_attributes", {}).get(self.entity_parameter_key, {})
         
         # params contains per-entity parameters configured for this photo
         # These are provided as JSON and can include various types
@@ -110,10 +114,12 @@ class ExamplePlugin(PhotoservPlugin):
         except Exception as e:
             self.logger.error(f"  Error getting thumbnail: {e}")
     
-    def on_photo_unpublish(self, data, params, **kwargs):
+    def on_photo_unpublish(self, data, **kwargs):
         """Handle photo unpublish events."""
         # data is a dict with serialized data from the public API
         self.logger.info(f"Photo unpublished: {data.get('title')} (UUID: {data.get('uuid')})")
+
+        params = data.get("custom_attributes", {}).get(self.entity_parameter_key, {})
         
         # params contains per-entity parameters configured for this photo
         if params:

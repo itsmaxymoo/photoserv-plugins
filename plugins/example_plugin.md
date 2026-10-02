@@ -23,11 +23,14 @@ The plugin expects JSON configuration with the following structure:
   "example_param": "some value",
   "api_key": "${MY_API_KEY}",
   "max_retries": 3,
-  "enabled_features": ["feature1", "feature2"]
+  "enabled_features": ["feature1", "feature2"],
+  "entity_parameter_key": "example_plugin"
 }
 ```
 
 Environment variables can be referenced using `${VAR_NAME}` syntax.
+`entity_parameter_key` selects the top-level custom-attributes object and defaults to
+`example_plugin` when blank or omitted.
 
 ## Entity Parameters
 
@@ -35,9 +38,11 @@ Per-photo parameters can be provided as JSON:
 
 ```json
 {
-  "custom_field": "special_value",
-  "priority": 5,
-  "tags": ["important", "featured"]
+  "example_plugin": {
+    "custom_field": "special_value",
+    "priority": 5,
+    "tags": ["important", "featured"]
+  }
 }
 ```
 
